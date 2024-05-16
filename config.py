@@ -29,6 +29,7 @@ SHARED_ASSET = {
     "button_text":"Read PDF"
 }
 
+HTML_BUTTON = {}
 
 COMPLETION_MESSAGE = "You've reached the end! I hope you learned something!"
 COMPLETION_CELEBRATION = False
@@ -42,6 +43,7 @@ PHASES = {
         "type": "text_input",
         "label": """What is this case study about?""",
         "instructions": """The user will summarize the shared case study. Please critically review their response for accuracy. You will give them credit for mentioning Ebola, and you will be very pleased if they mention it is about Ebola with any other relevant details.""",
+        "value": "The case study is about Ebola, and how it can be transmitted from animals to humans (a spillover event), humans to humans. It also includes details on how to support survivors returning to the community. ",
         "scored_phase": True,
         "rubric": """
             1. About

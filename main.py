@@ -8,7 +8,7 @@ from streamlit_extras.stylable_container import stylable_container
 from streamlit_extras.let_it_rain import rain
 from contextlib import nullcontext
 from openai import OpenAI, AssistantEventHandler
-from config import *
+from claims_rubric import *
 
 
 load_dotenv()
@@ -167,6 +167,7 @@ class AssistantManager:
 
             context_manager = st.spinner('Checking Score...') if scoring_run else nullcontext()
 
+            result = ""
             with context_manager:
                 for event in stream:
                     if event.data.object == "thread.message.delta":
@@ -270,6 +271,9 @@ def main():
                 data=asset_file,
                 file_name=SHARED_ASSET["name"],
                 mime="application/octet-stream")
+
+    if HTML_BUTTON:
+        st.link_button(label=HTML_BUTTON["button_text"], url=HTML_BUTTON["url"])
 
     #Create the assistant one time. Only if the Assistant ID is not found, create a new one. 
     openai_assistant = AssistantManager()
