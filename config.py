@@ -93,7 +93,7 @@ PHASES = {
     #    "label": "Now, please reflect on this exercise",
     #    "button_label": "Finish",
     #    "value":"I think I did well on this exercise and I'm glad that I got immediate feedback. ",
-    #    "instructions": """The user is reflecting on their experience. Acknowlege their reflection. 
+    #    "instructions": """The user is reflecting on their experience. Acknowledge their reflection.
     #     """,   
     #    "scored_phase": True,
     #    "rubric": """
@@ -111,16 +111,36 @@ PHASES = {
 }
 
 ######## AI CONFIGURATION #############
-OPENAI_MODEL = "gpt-4-turbo"
-ASSISTANT_ID = "asst_l4EttShET5wanS544wXRK0CX"
-ASSISTANT_THREAD = ""
-FREQUENCY_PENALTY = 0
-MAX_TOKENS = 1000
-PRESENCE_PENALTY = 0
-TEMPERATURE = 1
-TOP_P = 1
 
 ########## AI ASSISTANT CONFIGURATION #######
 ASSISTANT_NAME = "Case Study Tutor"
 ASSISTANT_INSTRUCTIONS = """
 You are providing feedback on a user's understanding of a shared case study about Ebola. The case study has been uploaded to the file search for shared reference by you and the student.  """
+
+
+LLM_CONFIGURATION = {
+    "gpt-4-turbo":{
+        "name":ASSISTANT_NAME,
+        "instructions": ASSISTANT_INSTRUCTIONS,
+        "tools":[{"type":"file_search"}],
+        "model":"gpt-4-turbo",
+        "temperature":0
+    },
+    "gpt-4o":{
+        "name":ASSISTANT_NAME,
+        "instructions": ASSISTANT_INSTRUCTIONS,
+        "tools":[{"type":"file_search"}],
+        "model":"gpt-4o",
+        "temperature":0
+    },
+    "gpt-3.5-turbo":{
+        "name":ASSISTANT_NAME,
+        "instructions": ASSISTANT_INSTRUCTIONS,
+        "tools":[{"type":"file_search"}],
+        "model":"gpt-3.5-turbo-0125",
+        "temperature":0
+    }
+}
+
+ASSISTANT_THREAD = ""
+ASSISTANT_ID_FILE = "assistant_id.txt"
