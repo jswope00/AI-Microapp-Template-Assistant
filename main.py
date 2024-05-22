@@ -109,7 +109,7 @@ class AssistantManager:
                 assistant_id=AssistantManager.assistant_id
             )
         if AssistantManager.thread_id:
-            self.thread = self.client.threads.retrieve(
+            self.thread = self.client.beta.threads.retrieve(
                 id=AssistantManager.thread_id
             )
 
@@ -126,7 +126,7 @@ class AssistantManager:
 
     def create_assistant(self):
         if not self.assistant:
-            assistant_obj = self.client.assistants.create(
+            assistant_obj = self.client.beta.assistants.create(
                 name=AssistantManager.llm_configuration["name"],
                 instructions=AssistantManager.llm_configuration["instructions"],
                 tools=AssistantManager.llm_configuration["tools"],
