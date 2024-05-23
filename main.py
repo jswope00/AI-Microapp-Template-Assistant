@@ -10,7 +10,7 @@ from contextlib import nullcontext
 import openai
 from config import *
 
-load_dotenv()
+load_dotenv(override=True)
 client = openai.OpenAI()
 
 function_map = {
@@ -94,7 +94,7 @@ def build_field(i, phases_dict):
 class AssistantManager:
     assistant_id = None
     thread_id = None
-    llm_configuration = LLM_CONFIGURATION["gpt-4-turbo"]
+    llm_configuration = LLM_CONFIGURATION["gpt-4o"]
 
     def __init__(self):
         self.client = openai
