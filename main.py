@@ -193,12 +193,12 @@ class AssistantManager:
                                     res_box.info(body=f'{result}', icon="🤖")
                                 if scoring_run and SCORING_DEBUG_MODE:
                                     res_box.info(body=f'SCORE (DEBUG MODE): {result}', icon="🤖")
+
             if not run_id:
                 run_id = event.data.id
 
             # Retrieve the run object to get the usage information
             run = self.client.beta.threads.runs.retrieve(run_id=run_id, thread_id=self.thread.id)
-
 
             if not scoring_run:
                 st_store(result, current_phase, "ai_response")
@@ -381,12 +381,13 @@ def main():
                 # Then print the stored AI Response
                 st.info(st.session_state[key], icon="🤖")
 
-        if submit_button:
+        if submit_button:     
             # Add INSTRUCTIONS message to the thread
             openai_assistant.add_message_to_thread(
                 role="assistant",
                 content=PHASE_DICT.get("instructions", "")
             )
+
             # Store the users input in a session variable
             st_store(user_input[PHASE_NAME], PHASE_NAME, "user_input")
             # Add USER MESSAGE to the thread
@@ -397,7 +398,23 @@ def main():
             # Currently, all instructions are handled in the system prompts, so no need to add additional instructions here.
             instructions = ""
             # Run the thread
-            openai_assistant.run_assistant(instructions, PHASE_NAME)
+            if PHASE_DICT.get("skip_run", False) == False:
+                # Only run the assistant if skip_run is False. If skip_run is true, then we just add messages to the thread and will run them all in some future phase. 
+                openai_assistant.run_assistant(instructions, PHASE_NAME)
+
+            if 'ai_response' in PHASE_DICT:
+                res_box = st.info(body="", icon="🤖")
+                result = ""
+                report = []
+                
+                hard_coded_message = PHASE_DICT['ai_response']
+                #TO-DO: This is supposed to stream, but it does not right now.
+                for char in hard_coded_message:
+                    result += char
+                    report.append(char)
+                    res_box.info(body=f'{result}', icon="🤖")
+                st.session_state[f"{PHASE_NAME}_ai_response"] = hard_coded_message
+                st_store(user_input[PHASE_NAME], PHASE_NAME, "user_input")
 
 
             if PHASE_DICT.get("scored_phase", "") == True:
