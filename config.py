@@ -124,23 +124,30 @@ LLM_CONFIGURATION = {
         "instructions": ASSISTANT_INSTRUCTIONS,
         "tools":[{"type":"file_search"}],
         "model":"gpt-4-turbo",
-        "temperature":0
+        "temperature":0,
+        "price_per_1k_prompt_tokens":.01,
+        "price_per_1k_completion_tokens": .03
     },
     "gpt-4o":{
         "name":ASSISTANT_NAME,
         "instructions": ASSISTANT_INSTRUCTIONS,
         "tools":[{"type":"file_search"}],
         "model":"gpt-4o",
-        "temperature":0
+        "temperature":0,
+        "price_per_1k_prompt_tokens":.005,
+        "price_per_1k_completion_tokens": .015
     },
     "gpt-3.5-turbo":{
         "name":ASSISTANT_NAME,
         "instructions": ASSISTANT_INSTRUCTIONS,
         "tools":[{"type":"file_search"}],
         "model":"gpt-3.5-turbo-0125",
-        "temperature":0
+        "temperature":0,
+        "price_per_1k_prompt_tokens":0.0005,
+        "price_per_1k_completion_tokens": 0.0015
     }
 }
+
 
 ASSISTANT_THREAD = ""
 ASSISTANT_ID_FILE = "assistant_id.txt"

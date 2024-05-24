@@ -178,6 +178,8 @@ class AssistantManager:
             context_manager = st.spinner('Checking Score...') if scoring_run else nullcontext()
 
             result = ""
+            run_id = None
+
             with context_manager:
                 for event in stream:
                     if event.data.object == "thread.message.delta":
@@ -191,6 +193,12 @@ class AssistantManager:
                                     res_box.info(body=f'{result}', icon="🤖")
                                 if scoring_run and SCORING_DEBUG_MODE:
                                     res_box.info(body=f'SCORE (DEBUG MODE): {result}', icon="🤖")
+            if not run_id:
+                run_id = event.data.id
+
+            # Retrieve the run object to get the usage information
+            run = self.client.beta.threads.runs.retrieve(run_id=run_id, thread_id=self.thread.id)
+
 
             if not scoring_run:
                 st_store(result, current_phase, "ai_response")
@@ -200,6 +208,30 @@ class AssistantManager:
                 st_store(score, current_phase, "ai_score")
                 st.write(f"Extracted score for {current_phase}: {score}")
 
+            # Extract token usage information from the run object
+            if 'COMPLETION_TOKENS' not in st.session_state:
+                st.session_state['COMPLETION_TOKENS'] = run.usage.completion_tokens
+            else:
+                st.session_state['COMPLETION_TOKENS'] += run.usage.completion_tokens
+
+            if 'PROMPT_TOKENS' not in st.session_state:
+                st.session_state['PROMPT_TOKENS'] = run.usage.prompt_tokens
+            else:
+                st.session_state['PROMPT_TOKENS'] += run.usage.prompt_tokens
+
+            # Calculate the cost
+            prompt_tokens = st.session_state['PROMPT_TOKENS']
+            completion_tokens = st.session_state['COMPLETION_TOKENS']
+            thread_cost = self.calculate_cost(prompt_tokens, completion_tokens)
+            #if 'TOTAL_COST' not in st.session_state:
+            #    st.session_state['TOTAL_COST'] = 0
+            st.session_state['TOTAL_COST'] = thread_cost
+
+    def calculate_cost(self, prompt_tokens, completion_tokens):
+        price_per_1k_prompt_tokens = AssistantManager.llm_configuration["price_per_1k_prompt_tokens"]  
+        price_per_1k_completion_tokens = AssistantManager.llm_configuration["price_per_1k_completion_tokens"]  
+        total_cost = ((prompt_tokens / 1000) * price_per_1k_prompt_tokens) + ((completion_tokens / 1000) * price_per_1k_completion_tokens)
+        return total_cost
 
 
 def st_store(input, phase_name, phase_key):
@@ -367,6 +399,7 @@ def main():
             # Run the thread
             openai_assistant.run_assistant(instructions, PHASE_NAME)
 
+
             if PHASE_DICT.get("scored_phase", "") == True:
                 if "rubric" in PHASE_DICT:
                     scoring_instructions = build_scoring_instructions(PHASE_DICT["rubric"])
@@ -400,8 +433,12 @@ def main():
             if COMPLETION_CELEBRATION:
                 celebration()
 
+
         # Increment i, but never more than the number of possible phases
         i = min(i + 1, len(PHASES))
+
+    if 'TOTAL_COST' in st.session_state:
+        st.markdown(f"<span style='font-size: .8em; font-style: italic;'>:dollar: Cost: ${st.session_state['TOTAL_COST']}</span>", unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
