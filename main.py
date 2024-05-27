@@ -104,14 +104,21 @@ class AssistantManager:
         self.summary = None
 
         self.load_assistant_id()
+
         if AssistantManager.assistant_id:
-            self.assistant = self.client.beta.assistants.retrieve(
-                assistant_id=AssistantManager.assistant_id
-            )
+            try:
+                self.assistant = self.client.beta.assistants.retrieve(
+                    assistant_id=AssistantManager.assistant_id
+                )
+            except:
+                st.error(f"Error retrieving assistant: {openai.APIError}")
         if AssistantManager.thread_id:
-            self.thread = self.client.beta.threads.retrieve(
-                id=AssistantManager.thread_id
-            )
+            try:
+                self.thread = self.client.beta.threads.retrieve(id=AssistantManager.thread_id)
+            except:
+                st.error(f"Error retrieving thread: {str(e)}")
+
+
 
     def load_assistant_id(self):
         try:
@@ -138,67 +145,77 @@ class AssistantManager:
             st.session_state["assistant_id"] = assistant_obj.id
 
     def create_thread(self):
-        if not self.thread:
-            if st.session_state.thread_obj:
-                print(f"Grabbing existing thread...")
-                thread_obj = st.session_state.thread_obj
-            else:
-                print(f"Creating and saving new thread")
-                thread_obj = self.client.beta.threads.create()
-                st.session_state.thread_obj = thread_obj
+        try:
+            if not self.thread:
+                if st.session_state.thread_obj:
+                    print(f"Grabbing existing thread...")
+                    thread_obj = st.session_state.thread_obj
+                else:
+                    print(f"Creating and saving new thread")
+                    thread_obj = self.client.beta.threads.create()
+                    st.session_state.thread_obj = thread_obj
 
-            AssistantManager.thread_id = thread_obj.id
-            self.thread = thread_obj
-            print(f"ThreadID::: {self.thread.id}")
-        else:
-            print(f"A thread already exists: {self.thread.id}")
+                AssistantManager.thread_id = thread_obj.id
+                self.thread = thread_obj
+                print(f"ThreadID::: {self.thread.id}")
+            else:
+                print(f"A thread already exists: {self.thread.id}")
+        except:
+            st.error(f"Error creating assistant: {openai.APIError}")
 
     def add_message_to_thread(self, role, content):
         if self.thread:
-            self.client.beta.threads.messages.create(
-                thread_id=self.thread.id,
-                role=role,
-                content=content
-            )
+            try:
+                self.client.beta.threads.messages.create(
+                    thread_id=self.thread.id,
+                    role=role,
+                    content=content
+                )
+            except:
+                st.error(f"Error creating thread: {openai.APIError}")
 
     def run_assistant(self, instructions, current_phase, scoring_run=False):
         if self.thread and self.assistant:
-            if not scoring_run or (scoring_run and SCORING_DEBUG_MODE):
-                res_box = st.info(body="", icon="🤖")
-            report = []
+            try:
+                if not scoring_run or (scoring_run and SCORING_DEBUG_MODE):
+                    res_box = st.info(body="", icon="🤖")
+                report = []
 
-            stream = self.client.beta.threads.runs.create(
-                assistant_id=self.assistant.id,
-                thread_id=self.thread.id,
-                instructions=instructions,
-                temperature=AssistantManager.llm_configuration["temperature"],
-                stream=True
-            )
+                stream = self.client.beta.threads.runs.create(
+                    assistant_id=self.assistant.id,
+                    thread_id=self.thread.id,
+                    instructions=instructions,
+                    temperature=AssistantManager.llm_configuration["temperature"],
+                    stream=True
+                )
 
-            context_manager = st.spinner('Checking Score...') if scoring_run else nullcontext()
+                context_manager = st.spinner('Checking Score...') if scoring_run else nullcontext()
 
-            result = ""
-            with context_manager:
-                for event in stream:
-                    if event.data.object == "thread.message.delta":
-                        # Iterate over content in the delta
-                        for content in event.data.delta.content:
-                            if content.type == 'text':
-                                # Print the value field from text deltas
-                                report.append(content.text.value)
-                                result = "".join(report).strip()
-                                if scoring_run == False:
-                                    res_box.info(body=f'{result}', icon="🤖")
-                                if scoring_run and SCORING_DEBUG_MODE:
-                                    res_box.info(body=f'SCORE (DEBUG MODE): {result}', icon="🤖")
+                result = ""
+                with context_manager:
+                    for event in stream:
+                        if event.data.object == "thread.message.delta":
+                            # Iterate over content in the delta
+                            for content in event.data.delta.content:
+                                if content.type == 'text':
+                                    # Print the value field from text deltas
+                                    report.append(content.text.value)
+                                    result = "".join(report).strip()
+                                    if scoring_run == False:
+                                        res_box.info(body=f'{result}', icon="🤖")
+                                    if scoring_run and SCORING_DEBUG_MODE:
+                                        res_box.info(body=f'SCORE (DEBUG MODE): {result}', icon="🤖")
 
-            if not scoring_run:
-                st_store(result, current_phase, "ai_response")
-            else:
-                st_store(result, current_phase, "ai_result")
-                score = extract_score(result)
-                st_store(score, current_phase, "ai_score")
-                st.write(f"Extracted score for {current_phase}: {score}")
+                if not scoring_run:
+                    st_store(result, current_phase, "ai_response")
+                else:
+                    st_store(result, current_phase, "ai_result")
+                    score = extract_score(result)
+                    st_store(score, current_phase, "ai_score")
+                    st.write(f"Extracted score for {current_phase}: {score}")
+            except:
+                st.error(f"Error creating assistant: {openai.APIError}")
+
 
 
 
