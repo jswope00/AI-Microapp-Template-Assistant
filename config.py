@@ -40,7 +40,8 @@ SCORING_DEBUG_MODE = True
 
 PHASES = {
     "about": {
-        "type": "text_input",
+        "type": "text_area",
+        "height": 200,
         "label": """What is this case study about?""",
         "instructions": """The user will summarize the shared case study. Please critically review their response for accuracy. You will give them credit for mentioning Ebola, and you will be very pleased if they mention it is about Ebola with any other relevant details.""",
         "value": "The case study is about Ebola, and how it can be transmitted from animals to humans (a spillover event), humans to humans. It also includes details on how to support survivors returning to the community. ",
@@ -84,7 +85,6 @@ PHASES = {
         """,   
        "scored_phase": False,
        "user_input": "",
-       "ai_response": "",
        "allow_skip": True
     },
     # "reflect": {
@@ -107,7 +107,67 @@ PHASES = {
     #    "allow_skip": True
 
     # #Add more steps as needed
-    # }
+    # },
+    "short_text": {
+       "type": "text_input",
+       "label": "Here is a question that requires a short text response",
+       "instructions": "Tell the AI what to do here...",
+       "scored_phase": False,
+       "rubric": """
+          1. Criteria 1
+               2 points - Requirements to receive 2 points
+               1 point - Requirements to receive 1 point
+               0 points - Requirements to receive 0 points
+          """,
+       "minimum_score": 1,
+       "allow_skip": True
+    },
+    "long_text": {
+       "type": "text_area",
+       "height": 100,
+       "label": "Here is a question that requires a long text response",
+       "instructions": "Tell the AI what to do here...",
+       "scored_phase": False,
+       "rubric": """
+          1. Criteria 1
+               2 points - Requirements to receive 2 points
+               1 point - Requirements to receive 1 point
+               0 points - Requirements to receive 0 points
+          """,
+       "minimum_score": 1,
+       "allow_skip": True
+    },
+    "selection": {
+       "type": "selectbox",
+       "options": ['Option 1', 'Option 2', 'Option 3'],
+       "label": "Here is a question that asks a user to choose one from a list of options",
+       "instructions": "Tell the AI what to do here...",
+       "scored_phase": False,
+       "rubric": """
+          1. Criteria 1
+               2 points - Requirements to receive 2 points
+               1 point - Requirements to receive 1 point
+               0 points - Requirements to receive 0 points
+          """,
+       "minimum_score": 1,
+       "allow_skip": True
+    },
+    "radio": {
+       "type": "radio",
+       "options": ['Option 1', 'Option 2', 'Option 3'],
+       "label": "Here is a question that asks a user to choose one from a list of radio options",
+       "instructions": "Tell the AI what to do here...",
+       "scored_phase": False,
+       "rubric": """
+          1. Criteria 1
+               2 points - Requirements to receive 2 points
+               1 point - Requirements to receive 1 point
+               0 points - Requirements to receive 0 points
+          """,
+       "minimum_score": 1,
+       "allow_skip": True
+    }
+
 }
 
 ######## AI CONFIGURATION #############

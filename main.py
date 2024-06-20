@@ -85,6 +85,11 @@ def build_field(i, phases_dict):
                 font-weight: bold;
                 font-size: 28px;
             }
+
+            div[role="radiogroup"] label p{
+                font-weight: unset !important;
+                font-size: unset !important;
+            }
             """,
     ):
 
@@ -191,38 +196,38 @@ class AssistantManager:
 
                 context_manager = st.spinner('Checking Score...') if scoring_run else nullcontext()
 
-            result = ""
-            run_id = None
+                result = ""
+                run_id = None
 
-            with context_manager:
-                for event in stream:
-                    if event.data.object == "thread.message.delta":
-                        # Iterate over content in the delta
-                        for content in event.data.delta.content:
-                            if content.type == 'text':
-                                # Print the value field from text deltas
-                                report.append(content.text.value)
-                                result = "".join(report).strip()
-                                if scoring_run == False:
-                                    res_box.info(body=f'{result}', icon="🤖")
-                                if scoring_run and SCORING_DEBUG_MODE:
-                                    res_box.info(body=f'SCORE (DEBUG MODE): {result}', icon="🤖")
+                with context_manager:
+                    for event in stream:
+                        if event.data.object == "thread.message.delta":
+                            # Iterate over content in the delta
+                            for content in event.data.delta.content:
+                                if content.type == 'text':
+                                    # Print the value field from text deltas
+                                    report.append(content.text.value)
+                                    result = "".join(report).strip()
+                                    if scoring_run == False:
+                                        res_box.info(body=f'{result}', icon="🤖")
+                                    if scoring_run and SCORING_DEBUG_MODE:
+                                        res_box.info(body=f'SCORE (DEBUG MODE): {result}', icon="🤖")
 
-            if not run_id:
-                run_id = event.data.id
+                if not run_id:
+                    run_id = event.data.id
 
-            # Retrieve the run object to get the usage information
-            run = self.client.beta.threads.runs.retrieve(run_id=run_id, thread_id=self.thread.id)
+                # Retrieve the run object to get the usage information
+                run = self.client.beta.threads.runs.retrieve(run_id=run_id, thread_id=self.thread.id)
 
-            if not scoring_run:
-                st_store(result, current_phase, "ai_response")
-            else:
-                st_store(result, current_phase, "ai_result")
-                score = extract_score(result)
-                st_store(score, current_phase, "ai_score")
-                st.write(f"Extracted score for {current_phase}: {score}")
-        except:
-                st.error(f"Error creating assistant: {openai.APIError}")
+                if not scoring_run:
+                    st_store(result, current_phase, "ai_response")
+                else:
+                    st_store(result, current_phase, "ai_result")
+                    score = extract_score(result)
+                    st_store(score, current_phase, "ai_score")
+                    st.write(f"Extracted score for {current_phase}: {score}")
+            except:
+                    st.error(f"Error creating assistant: {openai.APIError}")
 
             # Extract token usage information from the run object
             if 'COMPLETION_TOKENS' not in st.session_state:
